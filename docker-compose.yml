@@ -1,0 +1,63 @@
+
+networks:
+  rabbit.net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+
+services:
+
+  catalog.service.api:
+    container_name: catalog.service.api
+    image: ${DOCKER_REGISTRY-}catalogserviceapi
+    ports:
+        - "5020:8080"
+        - "5021:8081"
+    build:
+      context: .
+      dockerfile: CatalogService.API/Dockerfile
+    networks:
+        - rabbit.net
+    depends_on:
+        - rabbit.db.server
+        - rabbitmq.server
+
+  order.service.api:
+    container_name: order.service.api
+    image: ${DOCKER_REGISTRY-}orderserviceapi
+    ports:
+        - "5010:8080"
+        - "5011:8081"
+    build:
+      context: .
+      dockerfile: OrderService.API/Dockerfile
+    networks:
+        - rabbit.net
+    depends_on:
+        - rabbit.db.server
+        - rabbitmq.server
+
+  rabbit.db.server:
+    container_name: rabbit.db.server
+    ports:
+        - "6101:5432"
+    environment:
+        - POSTGRES_PASSWORD=1234
+        - POSTGRES_USER=admin
+    image: postgres:16.3-alpine
+    networks:
+        - rabbit.net
+    volumes:
+        - postgres-data:/var/lib/postgresql/data
+
+  rabbitmq.server:
+    container_name: rabbitmq.server
+    ports:
+        - "15672:15672"
+    image: rabbitmq:3.13-management
+    networks:
+        - rabbit.net
+    environment:
+        - RABBITMQ_DEFAULT_USER=admin
+        - RABBITMQ_DEFAULT_PASS=password
