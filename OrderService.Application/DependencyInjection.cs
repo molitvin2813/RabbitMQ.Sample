@@ -1,11 +1,8 @@
-﻿using EventBus.Abstraction.Interfaces;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using OrderService.Application.Common.AutoMapper;
 using OrderService.Application.Mediator.Behaviors;
-using OrderService.Application.RabbitMQ;
-using SharedCollection.Events;
 using System.Reflection;
 
 namespace OrderService.Application
@@ -25,8 +22,6 @@ namespace OrderService.Application
             services.AddValidatorsFromAssemblies(new[] { Assembly.GetExecutingAssembly() });
 
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-            services.AddTransient<IIntegrationEventHandler<ProductUpdateEvent>, ProductUpdateHandler>();
 
             return services;
         }
